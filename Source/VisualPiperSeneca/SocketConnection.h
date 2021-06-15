@@ -9,11 +9,12 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include <thread>
+#include "EstructurasComunicacion.h"
 #include "SocketConnection.generated.h"
 
+
 #define paqueteMax 1472
-#define MAX_NUM_TFB_VTX 12
-#define MAX_NUM_SEARCH_RAYS 6
+
 
 
 UCLASS()
@@ -31,152 +32,60 @@ protected:
 
 private:
 	FSocket* conexion;
+
+	TSharedPtr<FInternetAddr> addr;
+	TSharedPtr<FInternetAddr> addr2;
+
+	//Flags request response
+	bool flrw = false;
+	bool flobj = false;
+	bool flfog = false;
+	bool flswit = false;
+	bool fldayh = false;
+
+	//Counter
+
+	int ID_obj = 37;
+	int ID_ref = 0;
+	float latitud = 0;
+	float lon = 0;
+	float altitud = 0;
+	char onoff;
+	int estado = 0;
+	bool SimulacionActiva = false;
+
+	//Funciones Internas
 	void recibirDatosSocket();
 	void enviarDatosSocket();
+	void Descodificar(int bytesleidos);
+	void Codificar();
+
+	//Funciones Reque Des
+	int setRway(RTX_rw_setup_req* rw);
+	int setObjectSph(RTX_object_sph_req* sobj);
+	int setSwitch(RTX_switch_req* swiobj);
+	int setFog(RTX_fog_req* foj);
+	int setDayH(RTX_time_of_day_req* dia);
+	int setCloud(RTX_cloud_layer_req* nube);
+	int setEye(RTX_eye_offset_req* ojo);
+	int setRot(RTX_loc_rot_req* rot);
+	int setGs(RTX_gswitch_req* gs);
+	int setSky(RTX_sky_req* sky);
+	int setTfb(RTX_tfb_vtx_req* tfb);
+	int objaux(RTX_object_res* obj);
+	int objRes(RTX_coll_res* res);
+	//Funciones Reque Cod
+	int setTerrainFed(int* length,uint8* punteroBufferCod);
+	int setColision(int* length, uint8* punteroBufferCod);
+	int setSearchRes(int* length, uint8* punteroBufferCod);
+	int setupRW(int* length, uint8* punteroBufferCod);
+	int setObjRes(int* length, uint8* punteroBufferCod);
+	int AcknowledgeRes(int* length, uint8* punteroBufferCod);
+  
+
 	//FRunnableThread* ThreadEnvio = nullptr;
 	//FRunnableThread* ThreadRecibido = nullptr;
 
 
-	//Estructuras que se envian a DINAMICS
-	typedef struct
-	{
-		unsigned char opcode;    // 01 hex
-		unsigned char length;
-		unsigned char obj_id;
-		unsigned char error;
-
-	} RTX_object_res;
-
-	typedef struct
-	{
-		unsigned char opcode;    // 02 hex
-		unsigned char length;
-		unsigned char obj_id;
-		unsigned char spare1;
-		unsigned char flags;           // Bit 7: set for valid hit_id
-		unsigned char terrain_type;
-		unsigned char hit_obj_id;
-		unsigned char spare2;
-
-	} RTX_coll_res;
-
-	typedef struct
-	{
-		unsigned char flags;
-		unsigned char terrain_type;
-		unsigned char hit_obj_id;
-		unsigned char spare;
-		float         distance;
-
-	} RTX_search_data;
-
-	typedef struct
-	{
-		unsigned char opcode;    // 07 hex
-		unsigned char length;
-		unsigned char obj_id;
-		unsigned char num_rays;
-		RTX_search_data   set[MAX_NUM_SEARCH_RAYS];
-
-	} RTX_search_res;
-
-
-	typedef struct
-	{
-		unsigned char opcode;    //
-		unsigned char length;
-		unsigned char cmd;
-		unsigned char id;
-	} RTX_Acknowledge_res;
-
-
-	typedef struct
-	{
-		unsigned char terrain_type;
-		unsigned char spare[3];
-		float         height;
-
-	} RTX_tfb_data;
-
-	typedef struct
-	{
-		unsigned char opcode;    // 04 hex
-		unsigned char length;    // 1 + 2*nb_vtx
-		unsigned char obj_id;    // 0 for Host
-		unsigned char nb_vtx;    // Max of 12
-		RTX_tfb_data  set[MAX_NUM_TFB_VTX];
-
-	} RTX_tfb_res;
-
-	typedef struct
-	{
-		unsigned char opcode;    /* 24 hex */
-		unsigned char length;
-		unsigned char ref_id;    /* Echo of ref_id in request */
-		unsigned char spare1;
-
-	} RTX_loc_cframe_res;
-
-	typedef struct
-	{
-		unsigned char opcode;    /* 26 hex */
-		unsigned char length;
-		unsigned char obj_id;
-		unsigned char err_ref_id; /* If NOT ERR_BAD_OBJECT, then
-									 echo of ref_id in request */
-
-	} RTX_rw_setup_res;
-
-	typedef struct
-	{
-		unsigned char opcode;    /* 27 hex */
-		unsigned char length;
-		unsigned char channel_no;
-		unsigned char ref_id;    /* Echo of ref_id in request */
-
-	} RTX_eye_offset_res;
-
-	typedef struct
-	{
-		unsigned char   opcode;    /* SWITCH_CODE */
-		unsigned char   length;
-		unsigned short  sw_id_state;
-
-	} RTX_switch_res;
-
-	typedef struct
-	{
-		unsigned char   opcode;    /* GSWITCH_CODE */
-		unsigned char   length;
-		unsigned short  sw_id_state;
-
-	} RTX_gswitch_res;
-
-	typedef struct
-	{
-		unsigned char opcode;    /* LOCAL_ROT_CODE */
-		unsigned char length;
-		unsigned char ref_id;    /* Echo of ref_id in request */
-		unsigned char spare;
-
-	} RTX_loc_rot_res;
-
-	typedef struct
-	{
-		unsigned char opcode;    /* GLOCAL_ROT_CODE */
-		unsigned char length;
-		unsigned char ref_id;    /* Echo of ref_id in request */
-		unsigned char spare;
-
-	} RTX_gloc_rot_res;
-
-	typedef struct
-	{
-		unsigned char   opcode;    /* 2A hex */
-		unsigned char   length;
-		unsigned char   spare;
-		unsigned char   sky_id;    /* Echo of sky_id in request */
-
-	} RTX_sky_res;
 
 };

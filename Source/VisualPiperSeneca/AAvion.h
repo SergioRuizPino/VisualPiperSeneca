@@ -7,8 +7,11 @@
 
 #pragma once
 #include "CoreMinimal.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Character.h"
 #include "AAvion.generated.h"
+
 
 #define paqueteMax 1472
 
@@ -19,27 +22,16 @@ class VISUALPIPERSENECA_API AAAvion : public ACharacter
 
 public:
 	AAAvion();
-	virtual void Tick(float DeltaTime) override; //en cada frame
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override; 	// Called to bind functionality to input
+	virtual void Tick(float DeltaTime) override; 
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override; 
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-
 private:	
-	//TArray<char, TFixedAllocator<paqueteMax>> RTX_DATA;
-	FVector siguientePos();
+	UCameraComponent* Cam;
+	USpringArmComponent* brazo;
+	APlayerController* Camara;
 	void actualizarEstado(); //Actualiza Estado actual del avion segun datos recibidos
-	void actualizarEnvio(); //Actualiza los datos para enviar.
-	//void actualizarVectorMovimiento(FVector actual);
-	struct EnviarDatos{  //Estrutura que se utilizara para enviar datos a Dynamics
-		EnviarDatos();
-	};
-
-	struct RecibirDatos {  //Estructura que se usara para recibir datos de Dynamics
-		RecibirDatos();
-	};
-	EnviarDatos* DynamicsEnvio;
-	//static RecibirDatos DynamicsRecibe;
+	float DistanciaZ(FVector actual);//Metodo que devuelve la distancia entre avion y terreno
 };

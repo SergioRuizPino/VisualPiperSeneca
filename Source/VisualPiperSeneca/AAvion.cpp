@@ -1,4 +1,4 @@
-/* Fill out your copyright notice in the Description page of Project Settings.
+/*
 *
 * @author: Sergio Ruiz Pino
 * @version : 0.1
@@ -9,86 +9,72 @@
 #include "AAvion.h"
 #include "Kismet/GameplayStatics.h"
 
-//Local 
-
-int ii = -25000;
-extern uint8 RTX_DATA_RECIBIDO[paqueteMax];  //Bus de datos Recibir
-extern uint8 RTX_DATA_ENVIO[paqueteMax];  //Bus de datos Enviar
-extern int32 bytesleidos;
-FVector pos;
+//Local del proyecto
+bool colision = false;
+int altura = 15;
+int ii = 25;
+FVector pos,girador;
+FQuat rotar;
 
 AAAvion::AAAvion()
 {
 	PrimaryActorTick.bCanEverTick = true;
-
+	this->brazo = CreateDefaultSubobject<USpringArmComponent>(TEXT("CMR"));
+	this->Cam = CreateDefaultSubobject<UCameraComponent>(TEXT("Camara principal"));
+	this->brazo->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+	
+	this->brazo->TargetArmLength = 300.f;
+	this->brazo->SetRelativeLocation(FVector(0, 0, 0));
+	this->brazo->bEnableCameraLag = false;
+	this->brazo->bEnableCameraRotationLag = false;
+	this->Cam->AttachTo(this->brazo);
 }
 
-// Called when the game starts or when spawned
+
 void AAAvion::BeginPlay()
-{/*
-
-	if (!connected) { //Sino no nos conectamos, no podemos funcionar ,DESCOMENTAR ukinet TRAS PRUEBAS
-		//UE_LOG(LogTemp, Warning, TEXT("No Conectado"));
-		//FMessageDialog::Open(EAppMsgType::Ok, FText::FromString("No se ha podido realizar la conexion con Dynamics, revise los datos de conexion,se cerrara  Visual."));
-		//UKismetSystemLibrary::QuitGame(this, nullptr, EQuitPreference::Quit, true);
-		//GIsRequestingExit = 1; Esta intruccion en el constructor no puede ir  cierra el editor, ademas es una instruccion sucia.
-	}*/
+{
 	Super::BeginPlay();
-	APlayerController* OurPlayerController = UGameplayStatics::GetPlayerController(this, 0); //Control de camara
-	OurPlayerController->SetViewTargetWithBlend(this, 1.f);
-
+	colision = false;
+	this->Camara = UGameplayStatics::GetPlayerController(this, 0); //Control de camara
+	this->Camara->SetViewTargetWithBlend(this, 0.f,EViewTargetBlendFunction::VTBlend_Linear,0.f,false);
+	this->BecomeViewTarget(Camara);
 }
 
-// Called every frame
+
 void AAAvion::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	siguientePos();
+	this->actualizarEstado();
+	altura = this->DistanciaZ(this->GetActorLocation());
+	//UE_LOG(LogTemp, Warning, TEXT("altura  %d"),altura);
+	//if (altura >= this->GetActorLocation().Z) { colision = true; }
 
 }
 
 // Called to bind functionality to input
 void AAAvion::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	//Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 }
 
-FVector AAAvion::siguientePos() { //DEBUG METODO
-	FVector siguiente = GetActorLocation();
-	//siguiente = actualizarVectorMovimiento(siguiente);
 
-	ii += 50;
-	siguiente.X = 5000;
-	siguiente.Y = ii;
-	siguiente.Z = 3000;
-	//if (ii <= 10000) { siguiente.Y = ii; }else{ siguiente.Y = 10000; }
-	//if (ii <= 3000) { siguiente.Z = ii; }else{ siguiente.Z = 3000; }
-	if (ii >= 270000) { ii = -26000; }
-	//UE_LOG(LogTemp, Warning, TEXT("cONEXTADO %i"), ii);
-	SetActorLocation(siguiente);
-	pos = siguiente;
-	return siguiente;
-
+void AAAvion::actualizarEstado() { //Actualizamos valores
+		this->SetActorLocation(pos);
+		this->SetActorRelativeRotation(rotar);
 }
 
-void AAAvion::actualizarEnvio() {
-	this->DynamicsEnvio = (EnviarDatos*) RTX_DATA_ENVIO;
-	//Transformaciones al movimiento
-	FVector siguiente = GetActorLocation();
+float AAAvion::DistanciaZ(FVector actual)
+{
+	UWorld* Pantalla{ this->GetWorld() };  //Instancia de la escena actual
 
-
-
-
-
-
-
-	SetActorLocation(siguiente);
-}
-
-void AAAvion::actualizarEstado() {
-	if (bytesleidos) {
-
+	if (Pantalla)//instacia activa
+	{
+		FVector Avion{ actual.X, actual.Y, actual.Z };  
+		FVector Suelo{ actual.X, actual.Y, 0 };           
+		FHitResult col; //creamos una colision
+		Pantalla->LineTraceSingleByObjectType(OUT col,Avion,Suelo,FCollisionObjectQueryParams(ECollisionChannel::ECC_WorldStatic),FCollisionQueryParams());
+		if (col.GetActor()) return col.ImpactPoint.Z; //Altura donde se produjo colision
 	}
-
+	return 0;
 }
