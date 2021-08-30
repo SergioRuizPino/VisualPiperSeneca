@@ -15,9 +15,14 @@ int altura = 15;
 int ii = 25;
 FVector pos,girador;
 FQuat rotar;
+bool mover = true;
+extern bool SimulacionActiva;
+extern bool activo;
 
 AAAvion::AAAvion()
 {
+	//pos.X = 0;
+	//pos.Y = 0;
 	PrimaryActorTick.bCanEverTick = true;
 	this->brazo = CreateDefaultSubobject<USpringArmComponent>(TEXT("CMR"));
 	this->Cam = CreateDefaultSubobject<UCameraComponent>(TEXT("Camara principal"));
@@ -38,6 +43,8 @@ void AAAvion::BeginPlay()
 	this->Camara = UGameplayStatics::GetPlayerController(this, 0); //Control de camara
 	this->Camara->SetViewTargetWithBlend(this, 0.f,EViewTargetBlendFunction::VTBlend_Linear,0.f,false);
 	this->BecomeViewTarget(Camara);
+	pos.Z = 1300;
+	this->SetActorLocation(pos);
 }
 
 
@@ -46,8 +53,15 @@ void AAAvion::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	this->actualizarEstado();
 	altura = this->DistanciaZ(this->GetActorLocation());
-	//UE_LOG(LogTemp, Warning, TEXT("altura  %d"),altura);
-	//if (altura >= this->GetActorLocation().Z) { colision = true; }
+	/*UE_LOG(LogTemp, Warning, TEXT("altura  %d"),altura); //cesium = 0 !!!  debug
+	if (activo) {
+		if (altura >= this->GetActorLocation().Z) { colision = true; }
+	}
+	else {
+		
+	}*/
+
+ 
 
 }
 
@@ -60,7 +74,22 @@ void AAAvion::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 
 void AAAvion::actualizarEstado() { //Actualizamos valores
-		this->SetActorLocation(pos);
+		
+	FVector movimiento;
+	if (SimulacionActiva) {
+		if (mover) {
+			movimiento = rotar.Vector();
+			movimiento.Z = 0;
+			this->AddMovementInput(movimiento, 0.5);
+
+		}
+		movimiento = this->GetActorLocation();
+		movimiento.Z = pos.Z;
+		this->SetActorLocation(movimiento);
+	}
+
+	//this->SetActorLocation(pos);
+
 		this->SetActorRelativeRotation(rotar);
 }
 

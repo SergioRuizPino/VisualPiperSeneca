@@ -9,6 +9,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include <thread>
+#include "Math/UnrealMathUtility.h"
 #include "EstructurasComunicacion.h"
 #include "SocketConnection.generated.h"
 
@@ -52,7 +53,7 @@ private:
 	float altitud = 0;
 	char onoff;
 	int estado = 0;
-	bool SimulacionActiva = false;
+	
 
 	//Funciones Internas
 	void recibirDatosSocket();

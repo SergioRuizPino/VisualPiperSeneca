@@ -1,4 +1,4 @@
-/* Fill out your copyright notice in the Description page of Project Settings.
+/* 
 *
 * @author: Sergio Ruiz Pino
 * @version : 0.1
@@ -19,7 +19,7 @@
 
 uint8 RTX_DATA_RECIBIDO[paqueteMax];  //Bus de datos Recibir
 uint8 RTX_DATA_ENVIO[paqueteMax];  //Bus de datos Enviar
-extern bool colision;
+extern bool colision,mover;
 extern FVector pos;
 extern FQuat rotar;
 extern int altura;
@@ -27,7 +27,10 @@ extern float niebla;
 extern float hora;
 extern float nubeht;
 extern float nubeb;
-float antigualon = 0 , antigualat = 0;
+extern bool activo; //Cesium Estado
+bool SimulacionActiva = false;
+bool ModPosition = false;
+double antigualon = 0 , antigualat = 0, lonO = 0,latO = 0;
 int a = 0;
 
 
@@ -45,7 +48,7 @@ ASocketConnection::ASocketConnection()
 void ASocketConnection::BeginPlay()
 {
 	Super::BeginPlay();
-
+	SimulacionActiva = false;
 	int pMax = paqueteMax;
 	bool bCanBindAll = true;
 	FIPv4Address posSocket(192, 128, 134, 184); //ip
@@ -92,6 +95,11 @@ void ASocketConnection::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	this->recibirDatosSocket();
 	this->enviarDatosSocket();
+	if (!ModPosition) {
+		if (!SimulacionActiva && !activo) {
+			ModPosition = true;
+		}
+	}
 	
 	
 }
@@ -181,7 +189,7 @@ int ASocketConnection::setColision(int* length, uint8* punteroBufferCod) { //FUN
 		col_res.length = sizeof(RTX_coll_res);
 		col_res.flags = 0x80; // bit 7 set
 		memcpy(punteroBufferCod, &col_res, sizeof(RTX_coll_res));
-		this->SimulacionActiva = false; //dejarlo en estado de espera
+		SimulacionActiva = false; //dejarlo en estado de espera
 		longitud = sizeof(RTX_coll_res);
 		*length = *length + longitud;
 	}
@@ -286,7 +294,7 @@ int ASocketConnection::setRway(RTX_rw_setup_req* rw) {
 	this->onoff = rw->on_off;
 	this->altitud = rw->ht; 
 	ID_ref = rw->ref_id;
-	//UE_LOG(LogTemp, Warning, TEXT("respuesta  rw  %d"),rw->ref_id);
+	//UE_LOG(LogTemp, Warning, TEXT("respuesta  rw  %d"),rw->ref_id); debug
 	return (int)rw->length;
 }
 
@@ -296,65 +304,74 @@ int ASocketConnection::setObjectSph(RTX_object_sph_req* sobj) {
 	FQuat quaternion;
 	this->flobj = true;
 	this->ID_obj = sobj->obj_id;
-	//UE_LOG(LogTemp, Warning, TEXT(" objectsphr  obj id %i yaw %f altura  %f lat %f lon %f  pitch %f roll %f   %i  %i"),sobj->obj_id, sobj->h,sobj->ht,sobj->lat,sobj->lon,sobj->p,sobj->r,sobj->length,sizeof(RTX_object_sph_req));
-	/*if (sobj->lon > antigualon) { pos.X = pos.X - 2; }
-	if (sobj->lat > antigualat) { pos.Y = pos.Y - 2; }
-	if (sobj->lon < antigualon) { pos.X = pos.X + 2; }
-	if (sobj->lat < antigualat) { pos.Y = pos.Y + 2; }*/
+	//UE_LOG(LogTemp, Warning, TEXT(" objectsphr  obj id %i yaw %f altura  %f lat %f lon %f  pitch %f roll %f   %i  %i"),sobj->obj_id, sobj->h,sobj->ht,sobj->lat,sobj->lon,sobj->p,sobj->r,sobj->length,sizeof(RTX_object_sph_req)); debug
 	//MIRAR GET_EARTH_CENTRE_CART EN DYNAMICS
 	
 
 	if (sobj->obj_id == HOST_ID) {  //POSICION AVION
-	//	pos.X = 15000 * cos(sobj->lat) * cos(sobj->lon);//sobj->lon; //NOPE CORREGIR MEJOR
-		//pos.Y = 15000 * cos(sobj->lat) * sin(sobj->lon);//sobj->lat;    R cos(lat) sin(lon)
-		pos.Z = sobj->ht;
 
-		antigualat = sobj->lat;
-		antigualon = sobj->lon;
+		if (SimulacionActiva) {
+			if (activo) { //cesium no activo
+				pos.Z = (sobj->ht);
+			}else {
+				pos.Z = (sobj->ht) + 250; //distancia cesium
+				if (ModPosition) {
+					latO = sobj->lat;
+					lonO = sobj->lon;
+
+				}
 
 
 
+			
+			}
 
-		
-		girador = FRotator(sobj->p, sobj->h, sobj->r); 	//h heading z p pitcth eje y , R roll eje x,	//ht altitud
-		quaternion = FQuat(girador);
-		rotar = quaternion;
+			if (antigualat == sobj->lat && antigualon == sobj->lon)
+			{ mover = false; }
+			else { mover = true; }
+			antigualat = sobj->lat;
+			antigualon = sobj->lon;
+			
+			girador = FRotator(sobj->p, sobj->h, sobj->r); 	//h heading z p pitcth eje y , R roll eje x,	//ht altitud
+			quaternion = FQuat(girador);
+			rotar = quaternion;
+		}
 	}
 	return (int)sobj->length;
 }
 
 int ASocketConnection::setSwitch(RTX_switch_req* swiobj) {
 	this->flswit = true;
-	//UE_LOG(LogTemp, Warning, TEXT("switch  %d "), swiobj->sw_id_state);
+	//UE_LOG(LogTemp, Warning, TEXT("switch  %d "), swiobj->sw_id_state); debug
 	return (int)swiobj->length;
 }
 
 
 int ASocketConnection::setTfb(RTX_tfb_vtx_req* tfb) {
-	//UE_LOG(LogTemp, Warning, TEXT("tfb  %d   %d "), tfb->length,tfb->obj_id);
+	//UE_LOG(LogTemp, Warning, TEXT("tfb  %d   %d "), tfb->length,tfb->obj_id); debug
 	return (int)tfb->length;
 }
 
 int ASocketConnection::setSky(RTX_sky_req* sky) {
-	//UE_LOG(LogTemp, Warning, TEXT("sky "));
+	//UE_LOG(LogTemp, Warning, TEXT("sky "));  debug
 	return sky->length;
 }
 int ASocketConnection::setCloud(RTX_cloud_layer_req* nube) {
-	UE_LOG(LogTemp, Warning, TEXT("CLOUDY %d  %d "),nube->base_ht,nube->thickness);  
+	//UE_LOG(LogTemp, Warning, TEXT("CLOUDY %d  %d "),nube->base_ht,nube->thickness);   debug
 	nubeb = nube->base_ht;
 	nubeht = nube->thickness;
 	return (int)nube->length;
 }
 
 int ASocketConnection::setEye(RTX_eye_offset_req* ojo) {
-//	UE_LOG(LogTemp, Warning, TEXT("OJO   x  %f    y %f   z  %f"), ojo->x,ojo->y,ojo->z);
+//	UE_LOG(LogTemp, Warning, TEXT("OJO   x  %f    y %f   z  %f"), ojo->x,ojo->y,ojo->z); debug
 	return (int)ojo->length;
 }
 
 int ASocketConnection::setFog(RTX_fog_req* foj) {
 	this->flfog = true;
 	niebla = foj->vis;
-	UE_LOG(LogTemp, Warning, TEXT("niebla %f spare %d  flag %d"), foj->vis,(int)foj->spare,(int)foj->flags);
+//	UE_LOG(LogTemp, Warning, TEXT("niebla %f spare %d  flag %d"), foj->vis,(int)foj->spare,(int)foj->flags); debug
 	return(int)foj->length;
 
 }
@@ -362,27 +379,25 @@ int ASocketConnection::setFog(RTX_fog_req* foj) {
 int ASocketConnection::setDayH(RTX_time_of_day_req* dia) {
 	this->fldayh = true;
 	hora = dia->time;
-	UE_LOG(LogTemp, Warning, TEXT("hora  %f "), dia->time);
+	//UE_LOG(LogTemp, Warning, TEXT("hora  %f "), dia->time); debug
 	return (int)dia->length;
 }
 
 int ASocketConnection::setRot(RTX_loc_rot_req* rot) {
-	//UE_LOG(LogTemp, Warning, TEXT("rot  %f "), rot->r);
+	//UE_LOG(LogTemp, Warning, TEXT("rot  %f "), rot->r); debug
 	return (int)rot->length;
 }
 
 int ASocketConnection::setGs(RTX_gswitch_req* gs) {
-//	UE_LOG(LogTemp, Warning, TEXT("gs  %i "), gs->sw_id_state);
+//	UE_LOG(LogTemp, Warning, TEXT("gs  %i "), gs->sw_id_state); debug
 	return (int)gs->length*3;
 }
 
 int ASocketConnection::objaux(RTX_object_res* obj) {
-//	UE_LOG(LogTemp, Warning, TEXT("objs  %i "), obj->length);
+//	UE_LOG(LogTemp, Warning, TEXT("objs  %i "), obj->length); debug
 	return obj->length;
 }
 
 int ASocketConnection::objRes(RTX_coll_res* res) {
-
-
 	return res->length;
 }

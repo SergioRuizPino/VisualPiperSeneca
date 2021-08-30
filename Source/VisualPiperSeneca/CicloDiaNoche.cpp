@@ -1,10 +1,15 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+/*
+*
+* @author: Sergio Ruiz Pino
+* @version : 0.1
+*
+*/
 
 
 #include "CicloDiaNoche.h"
 
 float hora = 12;
-float niebla =40000 ;
+float niebla = 40000 ;
 float nubeht = 0.1;
 float nubeb = 0.1;
 float antiguaHora = 1;
@@ -12,6 +17,10 @@ float ttt = 0;
 bool activo = false;
 FRotator gir;
 FQuat quat;
+FVector nueva;
+extern double lonO;
+extern double latO;
+extern bool  ModPosition;
 // Sets default values
 ACicloDiaNoche::ACicloDiaNoche()
 {
@@ -33,33 +42,45 @@ void ACicloDiaNoche::Tick(float DeltaTime)
 
 	Super::Tick(DeltaTime);
 	if (hora != antiguaHora) {
-		/*this->horaInterna = hora;
+		this->horaInterna = hora;
 		antiguaHora = hora;
-		UE_LOG(LogTemp, Warning, TEXT("Delta    %f "), this->horaInterna);
-
-		if (this->horaInterna >= 21 || this->horaInterna <= 7) {
-
-			gir = FRotator(75+ this->horaInterna/12, 0, 0); 	//h heading z p pitcth eje y , R roll eje x,	//ht altitud
-
-		
-		}
-		else {
-			
-		}
+		UE_LOG(LogTemp, Warning, TEXT("hora cambiada    %f "), this->horaInterna);
+		gir.Yaw = 0;
+		gir.Roll = 0;
+		if (hora >= 0 && hora < 1) { gir.Pitch = 95;}
+		if (hora >= 1 && hora < 2) { gir.Pitch = 92; }
+		if (hora >= 2 && hora < 3) { gir.Pitch = 90; }
+		if (hora >= 3 && hora < 4) { gir.Pitch = 88; }
+		if (hora >= 4 && hora < 5) { gir.Pitch = 86; }
+		if (hora >= 5 && hora < 6) { gir.Pitch = 82; }
+		if (hora >= 6 && hora < 7) { gir.Pitch = 65; }
+		if (hora >= 7 && hora < 8) { gir.Pitch = 40; }
+		if (hora >= 8 && hora < 9) { gir.Pitch = 0; }
+		if (hora >= 9 && hora < 10) { gir.Pitch = -10; }
+		if (hora >= 10 && hora <= 11) { gir.Pitch = -20; }
+		if (hora >= 11 && hora <= 12) { gir.Pitch = -40; }
+		if (hora >= 12 && hora <= 13) { gir.Pitch = -60; }
+		if (hora >= 13 && hora <= 14) { gir.Pitch = -80; }
+		if (hora >= 14 && hora <= 15) { gir.Pitch = -90; }
+		if (hora >= 15 && hora <= 16) { gir.Pitch = -100; }
+		if (hora >= 16 && hora <= 17) { gir.Pitch = -120; }
+		if (hora >= 17 && hora <= 18) { gir.Pitch = -140; }
+		if (hora >= 18 && hora <= 19) { gir.Pitch = -160; }
+		if (hora >= 19 && hora <= 20) { gir.Pitch = -180; }
+		if (hora >= 20 && hora <= 21) { gir.Pitch = 160; }
+		if (hora >= 21 && hora <= 22) { gir.Pitch = 110; }
+		if (hora >= 22 && hora <= 23) { gir.Pitch = 105; }
+		if (hora >= 23 && hora <= 24) { gir.Pitch = 100; }
 
 		quat = FQuat(gir);
-		this->LuzMv->SetActorRotation(gir);*/
+		this->LuzMv->SetActorRotation(gir);
 	}
 
-	if (this->LuzMv->GetActorRotation().Pitch > 75) {
-		Movimiento = 2;//0.4;
-	}
-	else {
-		Movimiento = 5;//7.5;
-	}
-
+	Movimiento = 0.0004166;//movimiento velocidad a tiempo real
+	
 	if (this->LuzMv != nullptr) {
-		this->LuzMv->AddActorLocalRotation(FRotator(DeltaTime*Movimiento, 0, 0));
+		this->LuzMv->AddActorLocalRotation(FRotator(-DeltaTime*Movimiento, 0, 0));
+		//UE_LOG(LogTemp, Warning, TEXT("  estado rotacion   %f     f "), this->LuzMv->GetActorRotation().Pitch);
 	}
 
 }
@@ -109,7 +130,7 @@ float ACicloDiaNoche::returnFogExp() {
 	return this->Expofog;
 }
 
-float ACicloDiaNoche::returnFogExpAlt() {  //+pequeño - transicion  //10 Max
+float ACicloDiaNoche::returnFogExpAlt() {  //+pequeno - transicion  //10 Max
 	if (niebla > 30000) {
 		this->anularFog();
 	}else {
@@ -190,22 +211,43 @@ bool ACicloDiaNoche::LecturaXml(FXmlNode* node) {
 		const FXmlNode* nodee = node->FindChildNode("CESIUMOFF");
 		if (nodee != nullptr) {
 			aux = FCString::Atoi(*nodee->GetContent());
-				if (aux == 1) {
-					act = true;
-				}else {
+			if (aux == 1) {
+				act = true;
+			}
+			else {
 				act = false;
 			}
 
 		}
 		UE_LOG(LogTemp, Warning, TEXT("valor activo %d"), act);
 		return act;
-	}else {
+	}
+	else {
 		return act;
+	}
+}
+
+
+	bool ACicloDiaNoche::ModPosInicio(){
+		return ModPosition;
+	}
+
+	float ACicloDiaNoche::ModLat(){
+		return latO;
+	}
+
+	float ACicloDiaNoche::ModLon(){
+		return lonO;
+	}
+
+	FVector ACicloDiaNoche::nPos() {
+		nueva.X = lonO;
+		nueva.Y = latO;
+		nueva.Z = 220;
+		return nueva;
 	}
 
 
 
-
-}
 
 

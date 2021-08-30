@@ -1,4 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+/*
+*
+* @author: Sergio Ruiz Pino
+* @version : 0.1
+*
+*/
+
 
 #pragma once
 
@@ -21,10 +27,6 @@ public:
 		ADirectionalLight* LuzMv;
 	UPROPERTY(EditAnywhere,Category = "p")
 		float Movimiento;
-	//UPROPERTY(EditAnywhere, Category = "p")
-	//BP_Sky_Sphere* BPC;
-	//UAtmosphericFogComponent* niebla;
-	//AAtmosphericFog* a;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -46,6 +48,14 @@ public:
 		float RnieblaAlt();
 	UFUNCTION(BlueprintCallable)
 		bool CesiumOn();
+	UFUNCTION(BlueprintCallable)
+		bool ModPosInicio();
+	UFUNCTION(BlueprintCallable)
+		float ModLon();
+	UFUNCTION(BlueprintCallable)
+		float ModLat();
+	UFUNCTION(BlueprintCallable)
+        FVector nPos();
 
 	void anularFog();
 	void CalcularFog();

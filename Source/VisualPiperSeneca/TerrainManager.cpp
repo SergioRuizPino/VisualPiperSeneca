@@ -114,6 +114,7 @@ void ATerrainManager::InsertarLimites(int x, int y) {  // x del terreno, y del t
 	
 }
 
+//Debug fun
 void ATerrainManager::PrintMAP(){
 
 	for (const TPair<int, int>& pair : LimitesTerrenosSup)
@@ -139,10 +140,9 @@ void ATerrainManager::PrintMAP(){
 
 	for (const TPair<FString, TPair<ATerrainObj*, bool>>& pair : TerrenosActivos)
 	{
-		int aaaaa = 0;
+
 		UE_LOG(LogTemp, Warning, TEXT("valor MAP %s activo %i"), *pair.Key, pair.Value.Value);
-		//FString ASAS(FPaths::ProjectDir() + FString("terrenos/") + *pair.Key + ".xml");
-		//UE_LOG(LogTemp, Warning, TEXT("%s"), *ASAS);
+
 	}
 
 }
@@ -154,10 +154,10 @@ void ATerrainManager::EliminaTerrenosActivos(ATerrainObj* ter) { //elimina terre
 		FString f(*(fichero));
 		TerrenosActivos.Emplace(f, TPair<ATerrainObj*, bool>(nullptr, false));
 		if (!ter->Destroy()) {
-			UE_LOG(LogTemp, Warning, TEXT("Un terreno inmortal !!!!!!"));
+			UE_LOG(LogTemp, Warning, TEXT("Un terreno indestructible")); 
 		}
 		else {
-			UE_LOG(LogTemp, Warning, TEXT("Un terreno que muere"));
+			UE_LOG(LogTemp, Warning, TEXT("Un terreno que ha sido destruido"));
 		}
 }
 
@@ -175,7 +175,7 @@ double ATerrainManager::DistanciaTerrenosNoActivo(int tx,int ty) { //determinamo
 	TPair<int, int>* posic = TerrenosPosReal.Find(terreno);
 	double x = FMath::Square((pos.X - (posic->Key)));
 	double y = FMath::Square((pos.Y - (posic->Value)));
-	UE_LOG(LogTemp, Warning, TEXT("calculo en funcion %i  %i %f"), posic->Key, posic->Value, FMath::Sqrt((x + y)));
+	//UE_LOG(LogTemp, Warning, TEXT("calculo en funcion %i  %i %f"), posic->Key, posic->Value, FMath::Sqrt((x + y))); debug
 	return FMath::Sqrt((x + y));
 
 }
@@ -201,7 +201,7 @@ void ATerrainManager::DevuelveTerrenoActualInt(int32* x, int32* y) { //Devuelve 
 						pp.Split(",", &lf, &rigaux);
 						*x = FCString::Atoi(*lf);
 						*y = FCString::Atoi(*rigaux);
-						//UE_LOG(LogTemp, Warning, TEXT("ACTUAL %d %d"), *x, *y);
+						//UE_LOG(LogTemp, Warning, TEXT("ACTUAL %d %d"), *x, *y); debug
 						return;
 
 					}
@@ -211,7 +211,7 @@ void ATerrainManager::DevuelveTerrenoActualInt(int32* x, int32* y) { //Devuelve 
 
 }
 
-double ATerrainManager::DistanciaPuntoMedio(ATerrainObj* ter) { //Devuelve la distancia entre el avion y el punto medio de un terreno que le pasemos COMPROBAR
+double ATerrainManager::DistanciaPuntoMedio(ATerrainObj* ter) { //Devuelve la distancia entre el avion y el punto medio de un terreno que le pasemos 
 	int xMediaT = (ter->DevolverXreal() + ((ter->DevolverAncho() * ter->DevolverDistancia()) / 2));
 	int YMediaT = (ter->DevolverYreal() + ((ter->DevolverLargo() * ter->DevolverDistancia()) / 2));
 	double x = FMath::Square((pos.X - xMediaT));
@@ -226,7 +226,7 @@ void ATerrainManager::EliminadorTerrenosTick() {
 		{
 
 			if (pair.Value.Value) {//Si activo, solo tendremos en cuenta activados
-				if (DistanciaTerrenosActivos(pair.Key) >= 35000) { //Si distancia es limite
+				if (DistanciaTerrenosActivos(pair.Key) >= 60000) { //Si distancia es limite
 					EliminaTerrenosActivos(pair.Value.Key);
 				}
 
@@ -261,7 +261,7 @@ void ATerrainManager::CreadorTerrenosTick() {
 						{
 							//Si no esta creado se comprueba condicion para crear
 							
-							if (DistanciaTerrenosNoActivo(i,j) < 30000)
+							if (DistanciaTerrenosNoActivo(i,j) < 50000)
 							{
 					
 									CrearTerreno(terreno);

@@ -1,4 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+/*
+*
+* @author: Sergio Ruiz Pino
+* @version : 0.1
+*
+*/
 
 
 #include "TerrainObj.h"
@@ -93,7 +98,7 @@ void ATerrainObj::setInicio(FString fiche) {
 	}
 
 	if (FFileHelper::LoadFileToArray(pruebaFileBInary, RootPath2, 0)) { //lee corectamente
-		UE_LOG(LogTemp, Warning, TEXT("%u bits"), pruebaFileBInary.Num());
+		UE_LOG(LogTemp, Warning, TEXT("%u bits cargados del fichero"), pruebaFileBInary.Num());
 	}
 	else { //sino es valido todo por defecto a 0
 		UE_LOG(LogTemp, Warning, TEXT("No valido"));
@@ -103,7 +108,6 @@ void ATerrainObj::setInicio(FString fiche) {
 	pp.Split(",", &lf, &rigaux);
 	this->x = FCString::Atoi(*lf);
 	this->y = FCString::Atoi(*rigaux);
-	//CalcularPos(); //calculamos posición real en el software
 	//this->hilo = new TerrainThread(VerticesMalla, triangulosMalla, VectorNormales, UVS, vertexColors, Tangente,this->Terreno);
 }
 
@@ -112,7 +116,7 @@ void ATerrainObj::setFichero(FString fiche) {
 	//proteger si fiche = null o no cumple con mascara x,y
 }
 
-void ATerrainObj::TriangulosAnadir() { //AÑADE LOS TRIANGULOS DE LA MALLA  //4194222948 bytes
+void ATerrainObj::TriangulosAnadir() { //AÑADE LOS TRIANGULOS DE LA MALLA 
 
 	for (int32 yy = 0; yy < alto-1 ; yy++)
 	{
@@ -146,17 +150,7 @@ void  ATerrainObj::VerticesTriangulos()
 			else {
 				memcpy(&datos, &pruebaFileBInary[this->indice], 2); //buffer  a variable
 				this->indice = this->indice + 2;
-				//uint16 xxxx = (vvvv >> 8 | vvvv << 8);
-				//if (datos > 8849)
-				//{  //si altura mayor que el punto más alto tierra 8848 , altura = 1
-				//	datos =1 ;
-				//}
 
-				//if (datos <= 0)
-				//{  //si altura menor igual 0 , altura = 1  //NO LIMITAR DATOS DE ALTURA
-				//	datos = 1;
-				//}
-				//datos = 10000;
 			}
 			VerticesMalla.Add(FVector(xx *this->anchoEscala* Espaciotri, yy *this->altoEscala* Espaciotri, datos));
 			VectorNormales.Add(FVector(0.0f, 0.0f, 1.0f));
@@ -209,10 +203,7 @@ void ATerrainObj::OnConstruction(const FTransform& Transform) //Costruccion terr
 
 void ATerrainObj::PostLoad()
 {
-	//Super::PostLoad();
-	///this->TriangulosAnadir();
-	//this->VerticesTriangulos();
-	//Terreno->CreateMeshSection_LinearColor(0, VerticesMalla, triangulosMalla, VectorNormales, UVS, vertexColors, Tangente, true);
+
 }
 
 void ATerrainObj::LimpiarMalla() {
@@ -312,119 +303,3 @@ void ATerrainObj::EndPlay(EEndPlayReason::Type t) {
 	this->LimpiarMalla();
 }
 
-/*
-UTexture2D* ATerrainObj::Textura2(const FString& FullFilePath, bool& IsValid, int32& Width, int32& Height, TArray<FLinearColor>& OutPixels)
-{
-	//Clear any previous data
-	OutPixels.Empty();
-
-	IsValid = false;
-	UTexture2D* LoadedT2D = NULL;
-
-	IImageWrapperModule& ImageWrapperModule = FModuleManager::LoadModuleChecked<IImageWrapperModule>(FName("ImageWrapper"));
-	TSharedPtr<IImageWrapper> ImageWrapper = ImageWrapperModule.CreateImageWrapper(EImageFormat::BMP);
-
-	//Load From File
-	TArray<uint8> RawFileData;
-	if (!FFileHelper::LoadFileToArray(RawFileData, *FullFilePath)) return NULL;
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-	//Create T2D!
-	if (ImageWrapper.IsValid() && ImageWrapper->SetCompressed(RawFileData.GetData(), RawFileData.Num()))
-	{
-		TArray<uint8> UncompressedRGBA;
-		if (ImageWrapper->GetRaw(ERGBFormat::RGBA, 8, UncompressedRGBA))
-		{
-			LoadedT2D = UTexture2D::CreateTransient(ImageWrapper->GetWidth(), ImageWrapper->GetHeight(), PF_R8G8B8A8);
-
-			//Valid?
-			if (!LoadedT2D) return NULL;
-			//~~~~~~~~~~~~~~
-
-			//Out!
-			Width = ImageWrapper->GetWidth();
-			Height = ImageWrapper->GetHeight();
-
-			const TArray<uint8>& ByteArray = UncompressedRGBA;
-			//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-			for (int32 v = 0; v < ByteArray.Num(); v += 4)
-			{
-				if (!ByteArray.IsValidIndex(v + 3))
-				{
-					break;
-				}
-
-				OutPixels.Add(
-					FLinearColor(
-						ByteArray[v],		//R
-						ByteArray[v + 1],		//G
-						ByteArray[v + 2],		//B
-						ByteArray[v + 3] 		//A
-					)
-				);
-			}
-			//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-			//Copy!
-			void* TextureData = LoadedT2D->PlatformData->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
-			FMemory::Memcpy(TextureData, UncompressedRGBA.GetData(), UncompressedRGBA.Num());
-			LoadedT2D->PlatformData->Mips[0].BulkData.Unlock();
-
-			//Update!
-			LoadedT2D->UpdateResource();
-		}
-	}
-
-	// Success!
-	IsValid = true;
-	
-	return LoadedT2D;
-	
-}*/
-
-
-UTexture2D* ATerrainObj::Textura(const FString& ImagePath, bool& IsValid, int32& OutWidth, int32& OutHeight)
-{
-	UTexture2D* Texture = nullptr;
-	IsValid = false;
-
-	// To avoid log spam, make sure it exists before doing anything else.
-	if (!FPlatformFileManager::Get().GetPlatformFile().FileExists(*ImagePath))
-	{
-		return nullptr;
-	}
-
-	TArray<uint8> CompressedData;
-	if (!FFileHelper::LoadFileToArray(CompressedData, *ImagePath))
-	{
-		return nullptr;
-	}
-	IImageWrapperModule& ImageWrapperModule = FModuleManager::LoadModuleChecked<IImageWrapperModule>(FName("ImageWrapper"));
-	TSharedPtr<IImageWrapper> ImageWrapper = ImageWrapperModule.CreateImageWrapper(EImageFormat::BMP);
-	
-	if (ImageWrapper.IsValid() && ImageWrapper->SetCompressed(CompressedData.GetData(), CompressedData.Num()))
-	{
-		TArray<uint8> UncompressedRGBA;
-
-		if (ImageWrapper->GetRaw(ERGBFormat::RGBA, 8, UncompressedRGBA))
-		{
-			Texture = UTexture2D::CreateTransient(ImageWrapper->GetWidth(), ImageWrapper->GetHeight(), PF_R8G8B8A8);
-
-			if (Texture != nullptr)
-			{
-				IsValid = true;
-
-				OutWidth = ImageWrapper->GetWidth();
-				OutHeight = ImageWrapper->GetHeight();
-
-				void* TextureData = Texture->PlatformData->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
-				FMemory::Memcpy(TextureData, UncompressedRGBA.GetData(), UncompressedRGBA.Num());
-				Texture->PlatformData->Mips[0].BulkData.Unlock();
-				Texture->UpdateResource();
-			}
-		}
-	}
-	UE_LOG(LogTemp, Warning, TEXT("valido"));
-	return Texture;
-}
