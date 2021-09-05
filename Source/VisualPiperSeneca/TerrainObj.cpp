@@ -7,6 +7,7 @@
 
 
 #include "TerrainObj.h"
+#include "Components/BoxComponent.h"
 #include "Math/UnrealMathUtility.h"
 
 // Sets default values
@@ -25,7 +26,10 @@ ATerrainObj::ATerrainObj()
 
 
 
-
+	this->caja = CreateDefaultSubobject<UBoxComponent>(TEXT("CREADA CAJA CHOQUE"));
+	this->caja->SetWorldLocation(this->GetActorLocation());
+	this->caja->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+	this->caja->OnComponentBeginOverlap.AddDynamic(this, &ATerrainObj::OnBoxBeginOverlap);
 	//StoredMaterial->
 //	bool a;
 	
@@ -303,3 +307,14 @@ void ATerrainObj::EndPlay(EEndPlayReason::Type t) {
 	this->LimpiarMalla();
 }
 
+void  ATerrainObj::OnBoxBeginOverlap(UPrimitiveComponent* componenteChoque, AActor* ActorChoque, UPrimitiveComponent* componente, int32 jind, bool desde, const FHitResult& resultado) {
+	FVector npos;
+	UE_LOG(LogTemp, Warning, TEXT("CHOQUE terreno "));
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, "CHOQUE terreno");
+	//colision = true;
+	//npos.X = 0;
+	//npos.Y = 0;
+	//npos.Z = 10000;
+	//this->SetActorLocation(npos);
+
+}

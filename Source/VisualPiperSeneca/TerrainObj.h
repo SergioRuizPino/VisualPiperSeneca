@@ -38,6 +38,9 @@ public:
 	const int DevolverLargo() const;
 	const int DevolverDistancia() const;
 	TerrainThread* hilo;
+	class UBoxComponent* caja;
+	UFUNCTION()
+		void OnBoxBeginOverlap(UPrimitiveComponent* componenteChoque, AActor* ActorChoque, UPrimitiveComponent* componente, int32 jind, bool desde, const FHitResult& resultado);
 
 protected:
 	// Called when the game starts or when spawned

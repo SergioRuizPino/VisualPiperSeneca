@@ -21,6 +21,8 @@ FVector nueva;
 extern double lonO;
 extern double latO;
 extern bool  ModPosition;
+extern bool colision;
+extern FQuat rotar;
 // Sets default values
 ACicloDiaNoche::ACicloDiaNoche()
 {
@@ -76,7 +78,7 @@ void ACicloDiaNoche::Tick(float DeltaTime)
 		this->LuzMv->SetActorRotation(gir);
 	}
 
-	Movimiento = 0.0004166;//movimiento velocidad a tiempo real
+	Movimiento = 0.004166;//movimiento velocidad a tiempo real
 	
 	if (this->LuzMv != nullptr) {
 		this->LuzMv->AddActorLocalRotation(FRotator(-DeltaTime*Movimiento, 0, 0));
@@ -243,11 +245,10 @@ bool ACicloDiaNoche::LecturaXml(FXmlNode* node) {
 	FVector ACicloDiaNoche::nPos() {
 		nueva.X = lonO;
 		nueva.Y = latO;
-		nueva.Z = 220;
+		nueva.Z = 0;
 		return nueva;
 	}
 
-
-
-
-
+	void ACicloDiaNoche::Choque() {
+		colision = true;
+	}

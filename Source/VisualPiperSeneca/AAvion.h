@@ -24,11 +24,17 @@ public:
 	AAAvion();
 	virtual void Tick(float DeltaTime) override; 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override; 
+	class UBoxComponent* caja;
+	UFUNCTION()
+	void OnBoxBeginOverlap(UPrimitiveComponent* componenteChoque, AActor* ActorChoque, UPrimitiveComponent* componente, int32 indice, bool desde, const FHitResult& resultado);
+	
 
 protected:
 	virtual void BeginPlay() override;
 
 private:	
+	float Movimiento;
+	UPROPERTY(EditAnywhere, Category = "Camara")
 	UCameraComponent* Cam;
 	USpringArmComponent* brazo;
 	APlayerController* Camara;

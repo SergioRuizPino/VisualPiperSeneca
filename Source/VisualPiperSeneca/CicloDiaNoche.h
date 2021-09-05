@@ -56,6 +56,8 @@ public:
 		float ModLat();
 	UFUNCTION(BlueprintCallable)
         FVector nPos();
+	UFUNCTION(BlueprintCallable)
+		void Choque();
 
 	void anularFog();
 	void CalcularFog();

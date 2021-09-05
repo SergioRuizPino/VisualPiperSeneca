@@ -29,7 +29,8 @@ extern float nubeht;
 extern float nubeb;
 extern bool activo; //Cesium Estado
 bool SimulacionActiva = false;
-bool ModPosition = false;
+bool ModPosition = true;
+bool ajustado = false;
 double antigualon = 0 , antigualat = 0, lonO = 0,latO = 0;
 int a = 0;
 
@@ -95,12 +96,27 @@ void ASocketConnection::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	this->recibirDatosSocket();
 	this->enviarDatosSocket();
-	if (!ModPosition) {
-		if (!SimulacionActiva && !activo) {
+
+	if (SimulacionActiva && !activo) {
+		if (ajustado) {
+			ModPosition = false;
+		}
+		else {
 			ModPosition = true;
+			ajustado = true;
 		}
 	}
-	
+
+		if (!SimulacionActiva && !activo) {
+				ModPosition = true;
+				ajustado = false;
+		}
+
+
+
+	/*	UE_LOG(LogTemp, Warning, TEXT("simul est  rw  %d"),SimulacionActiva); 
+		UE_LOG(LogTemp, Warning, TEXT("mod est  rw  %d"), ModPosition);
+		UE_LOG(LogTemp, Warning, TEXT("ajustado est  rw  %d"), ajustado);  bloque debug */
 	
 }
 
@@ -192,6 +208,7 @@ int ASocketConnection::setColision(int* length, uint8* punteroBufferCod) { //FUN
 		SimulacionActiva = false; //dejarlo en estado de espera
 		longitud = sizeof(RTX_coll_res);
 		*length = *length + longitud;
+		colision = false;
 	}
 	return longitud;
 }
@@ -254,9 +271,14 @@ void ASocketConnection::Descodificar(int bytesleidos) { //Recibimos y enviamos d
 
 		if ((int)Cabecera->status) {  //0 = activa, 1 =  inactiva  //Si paramos desde IOS o choque, cabecera cambia
 			SimulacionActiva = false;
+			//pos.X = 0;
+			//pos.Y = 0;
+			//ModPosition = true;
 		}
 		else {
 			SimulacionActiva = true;
+
+			//ModPosition = false;
 		}
 
 		while (length < Cabecera->length)
@@ -314,16 +336,12 @@ int ASocketConnection::setObjectSph(RTX_object_sph_req* sobj) {
 			if (activo) { //cesium no activo
 				pos.Z = (sobj->ht);
 			}else {
-				pos.Z = (sobj->ht) + 250; //distancia cesium
+				pos.Z = (sobj->ht) * 10; //distancia cesium
 				if (ModPosition) {
 					latO = sobj->lat;
 					lonO = sobj->lon;
 
 				}
-
-
-
-			
 			}
 
 			if (antigualat == sobj->lat && antigualon == sobj->lon)
