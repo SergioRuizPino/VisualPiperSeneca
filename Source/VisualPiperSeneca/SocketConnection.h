@@ -83,7 +83,8 @@ private:
 	int setObjRes(int* length, uint8* punteroBufferCod);
 	int AcknowledgeRes(int* length, uint8* punteroBufferCod);
   
-
+	//Calculadora
+	int alturaterrenosCesium(double, double);
 	//FRunnableThread* ThreadEnvio = nullptr;
 	//FRunnableThread* ThreadRecibido = nullptr;
 

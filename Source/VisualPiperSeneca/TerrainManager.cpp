@@ -16,7 +16,7 @@ extern bool activo; //Cesium Estado
 
 ATerrainManager::ATerrainManager()
 {
-
+	
 }
 
 // Called when the game starts or when spawned
@@ -246,10 +246,7 @@ void ATerrainManager::CreadorTerrenosTick() {
 			//if (i != actualX || j != actualX) {
 			
 				FString terreno(FString::FromInt(i) + "," + FString::FromInt(j));
-				if (false){ //es limite
-
-
-
+				if (false){ //es limite,
 
 
 			

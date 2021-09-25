@@ -54,8 +54,7 @@ ATerrainObj::ATerrainObj()
 	//UE_LOG(LogTemp, Warning, TEXT(" value ruta %sMateriales/M_Water_Ocean.uasset") ,*FPaths::ProjectDir());*/
 	this->indice = 0;
 	this->Terreno->SetMobility(EComponentMobility::Static);
-	//this->terenorap = CreateDefaultSubobject<UHierarchicalInstancedStaticMeshComponent>(TEXT("HierarchicalInstancedStaticMesh"));
-	//SetRootComponent(this->terenorap);
+
 	Terreno->bUseAsyncCooking = true;
 
 }
@@ -105,7 +104,7 @@ void ATerrainObj::setInicio(FString fiche) {
 		UE_LOG(LogTemp, Warning, TEXT("%u bits cargados del fichero"), pruebaFileBInary.Num());
 	}
 	else { //sino es valido todo por defecto a 0
-		UE_LOG(LogTemp, Warning, TEXT("No valido"));
+		UE_LOG(LogTemp, Warning, TEXT("No valido fichero"));
 	}
 
 	//Guardamos posición x,y
@@ -185,22 +184,10 @@ void ATerrainObj::OnConstruction(const FTransform& Transform) //Costruccion terr
 
 
 	Terreno->CreateMeshSection_LinearColor(0, VerticesMalla, triangulosMalla, VectorNormales, UVS, vertexColors, Tangente, true);
-	//Terreno->SetMaterial
 
-	//UMaterial* a();
-	//POSICIIÓN DE EMPIECE  0, 0
-
-	//Terreno->SetMaterial(0, a);
-	//while (hilo->Continua) {}
-	//Terreno->sta
-	//Terreno->CreateMeshSection(0, VerticesMalla, triangulosMalla, VectorNormales, UVS, Tangente, true);
-	//Terreno->UpdateMeshSection_LinearColor(0, VerticesMalla, triangulosMalla, VectorNormales, UVS, vertexColors, Tangente, true);
-//	Terreno->bEnableAutoLODGeneration = true;
-	
-	//Terreno->CreateMeshSection_LinearColor(0, this->hilo->VerticesMalla, this->hilo->triangulosMalla, this->hilo->VectorNormales, this->hilo->UVS, this->hilo->vertexColors, this->hilo->Tangente, true);
 
 	this->indice = 0;
-	//terenorap->cr
+	
 
 }
 
@@ -308,9 +295,9 @@ void ATerrainObj::EndPlay(EEndPlayReason::Type t) {
 }
 
 void  ATerrainObj::OnBoxBeginOverlap(UPrimitiveComponent* componenteChoque, AActor* ActorChoque, UPrimitiveComponent* componente, int32 jind, bool desde, const FHitResult& resultado) {
-	FVector npos;
-	UE_LOG(LogTemp, Warning, TEXT("CHOQUE terreno "));
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, "CHOQUE terreno");
+	FVector npos; // ya lo hace avion
+	//UE_LOG(LogTemp, Warning, TEXT("CHOQUE terreno ")); lo hace el avion
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, "CHOQUE terreno");
 	//colision = true;
 	//npos.X = 0;
 	//npos.Y = 0;

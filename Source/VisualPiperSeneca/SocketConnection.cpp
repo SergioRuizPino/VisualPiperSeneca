@@ -32,7 +32,7 @@ bool SimulacionActiva = false;
 bool ModPosition = true;
 bool ajustado = false;
 double antigualon = 0 , antigualat = 0, lonO = 0,latO = 0;
-int a = 0;
+int alturaCesiumSegunTerreno = 10000;
 
 
 // Sets default values
@@ -55,9 +55,6 @@ void ASocketConnection::BeginPlay()
 	FIPv4Address posSocket(192, 128, 134, 184); //ip
 	FIPv4Address posSocket2(192, 128, 134, 188); //ip
 
-	//addr2 = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateInternetAddr(posSocket2.Value, 12000);
-	//addr2->SetIp(posSocket2.Value);
-	//addr2->SetPort(12000);//Puerto de conexion
 	addr = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->GetLocalHostAddr(*GLog, bCanBindAll);
 	//addr = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateInternetAddr(posSocket.Value, 12000);
 	addr->SetIp(posSocket.Value);
@@ -99,24 +96,29 @@ void ASocketConnection::Tick(float DeltaTime)
 
 	if (SimulacionActiva && !activo) {
 		if (ajustado) {
+			alturaCesiumSegunTerreno = alturaterrenosCesium(latO, lonO);
 			ModPosition = false;
 		}
 		else {
+			alturaCesiumSegunTerreno = alturaterrenosCesium(latO, lonO);
 			ModPosition = true;
 			ajustado = true;
+			
 		}
 	}
 
 		if (!SimulacionActiva && !activo) {
+			alturaCesiumSegunTerreno = alturaterrenosCesium(latO, lonO);
 				ModPosition = true;
 				ajustado = false;
+				
 		}
 
 
 
-	/*	UE_LOG(LogTemp, Warning, TEXT("simul est  rw  %d"),SimulacionActiva); 
+		/*UE_LOG(LogTemp, Warning, TEXT("simul est  rw  %d"),SimulacionActiva); 
 		UE_LOG(LogTemp, Warning, TEXT("mod est  rw  %d"), ModPosition);
-		UE_LOG(LogTemp, Warning, TEXT("ajustado est  rw  %d"), ajustado);  bloque debug */
+		UE_LOG(LogTemp, Warning, TEXT("ajustado est  rw  %d"), ajustado); // bloque debug */
 	
 }
 
@@ -327,7 +329,6 @@ int ASocketConnection::setObjectSph(RTX_object_sph_req* sobj) {
 	this->flobj = true;
 	this->ID_obj = sobj->obj_id;
 	//UE_LOG(LogTemp, Warning, TEXT(" objectsphr  obj id %i yaw %f altura  %f lat %f lon %f  pitch %f roll %f   %i  %i"),sobj->obj_id, sobj->h,sobj->ht,sobj->lat,sobj->lon,sobj->p,sobj->r,sobj->length,sizeof(RTX_object_sph_req)); debug
-	//MIRAR GET_EARTH_CENTRE_CART EN DYNAMICS
 	
 
 	if (sobj->obj_id == HOST_ID) {  //POSICION AVION
@@ -336,12 +337,13 @@ int ASocketConnection::setObjectSph(RTX_object_sph_req* sobj) {
 			if (activo) { //cesium no activo
 				pos.Z = (sobj->ht);
 			}else {
-				pos.Z = (sobj->ht) * 10; //distancia cesium
+				
 				if (ModPosition) {
 					latO = sobj->lat;
 					lonO = sobj->lon;
 
 				}
+				pos.Z = (sobj->ht) + alturaCesiumSegunTerreno;
 			}
 
 			if (antigualat == sobj->lat && antigualon == sobj->lon)
@@ -389,7 +391,7 @@ int ASocketConnection::setEye(RTX_eye_offset_req* ojo) {
 int ASocketConnection::setFog(RTX_fog_req* foj) {
 	this->flfog = true;
 	niebla = foj->vis;
-//	UE_LOG(LogTemp, Warning, TEXT("niebla %f spare %d  flag %d"), foj->vis,(int)foj->spare,(int)foj->flags); debug
+	//UE_LOG(LogTemp, Warning, TEXT("niebla %f spare %d  flag %d"), foj->vis,(int)foj->spare,(int)foj->flags);// debug
 	return(int)foj->length;
 
 }
@@ -419,3 +421,48 @@ int ASocketConnection::objaux(RTX_object_res* obj) {
 int ASocketConnection::objRes(RTX_coll_res* res) {
 	return res->length;
 }
+
+int ASocketConnection::alturaterrenosCesium(double latllega, double lonllega) { //Segun aeropuerto sumar
+
+	if ((latllega >= 36.830 && latllega <= (36.869))) {
+	//	UE_LOG(LogTemp, Warning, TEXT("MALAGA "));
+		return 7000;
+	}
+
+
+	if ((latllega >= 37.830 && latllega <= (37.859))) {
+	//	UE_LOG(LogTemp, Warning, TEXT("Cordoba "));
+		return 14000;
+	}
+
+
+	if ((latllega >= 37.010 && latllega <= (37.0159))) {
+		//UE_LOG(LogTemp, Warning, TEXT("faro "));
+		return 7500;
+	}
+
+
+	if ((latllega >= 37.188600 && latllega <= (37.188999))) {
+		//UE_LOG(LogTemp, Warning, TEXT("granada "));
+		return 64000;
+	}
+
+
+	if ((latllega >= 36.730 && latllega <= (36.899))) {
+		//UE_LOG(LogTemp, Warning, TEXT("jerez"));
+		return 7500;
+	}
+
+	if ((latllega >= 38.88 && latllega <= (39.099))) {
+		//UE_LOG(LogTemp, Warning, TEXT("j));
+		return 30000;
+	}
+
+
+
+
+
+	return 10000;
+}
+
+

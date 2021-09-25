@@ -37,10 +37,10 @@ public:
 	const int DevolverAncho() const;
 	const int DevolverLargo() const;
 	const int DevolverDistancia() const;
-	TerrainThread* hilo;
+	TerrainThread* hilo; //creacion mediante hilos, desactivado debido a no mejora eficiencia
 	class UBoxComponent* caja;
 	UFUNCTION()
-		void OnBoxBeginOverlap(UPrimitiveComponent* componenteChoque, AActor* ActorChoque, UPrimitiveComponent* componente, int32 jind, bool desde, const FHitResult& resultado);
+	void OnBoxBeginOverlap(UPrimitiveComponent* componenteChoque, AActor* ActorChoque, UPrimitiveComponent* componente, int32 jind, bool desde, const FHitResult& resultado);
 
 protected:
 	// Called when the game starts or when spawned
@@ -70,7 +70,7 @@ private:
 	int altoEscala;
 	int32 indice = 0;
 	int x, y; //Posición Mapa 
-	int realx, realy;
+	int realx, realy; //pos real
 	int Espaciotri;
 	FXmlFile ficheroInformacion;
 	FString ficheroReferencia;

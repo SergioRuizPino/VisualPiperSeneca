@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// NO USADO EN LA VERSION FINAL att SERGIO RUIZ PINO
 
 
 #include "TerrainThread.h"

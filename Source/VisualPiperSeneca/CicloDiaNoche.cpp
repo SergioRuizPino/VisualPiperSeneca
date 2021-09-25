@@ -142,15 +142,15 @@ float ACicloDiaNoche::returnFogExpAlt() {  //+pequeno - transicion  //10 Max
 }
 
 float ACicloDiaNoche::RnieblaAlt() {  
-	this->alturaN =1;
+	this->alturaN = 1;
 	return this->alturaN;
 }
 
 
 
 void ACicloDiaNoche::anularFog() {
-	this->Expofog = 0.00001;
-	this->ExpofogAlt = 0.1;
+	this->Expofog = 0.0000000001;
+	this->ExpofogAlt = 0.01;
 	this->nieblap = 0.1;
 }
 
@@ -162,7 +162,7 @@ void ACicloDiaNoche::CalcularFog() {
 		float aux = niebla - 30000;
 		if (aux < 0) { aux = aux * (-1); }
 		aux = aux / 600000;
-		aux = aux * 140.879 + (float)((30000 - niebla) / 6000);
+		aux = aux * 147.879 + (float)((30000 - niebla) / 6000);
 		if (niebla < 30000 && niebla >15000) {
 			aux = aux / 25;
 		}

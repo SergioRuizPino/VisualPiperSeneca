@@ -19,7 +19,6 @@ bool mover = true;
 extern bool SimulacionActiva;
 extern bool ModPosition;
 extern bool activo;
-bool parar = true;
 extern bool ajustado;
 
 
@@ -53,7 +52,7 @@ void AAAvion::BeginPlay()
 	if (!activo) {
 		pos.X = 0;
 		pos.Y = 0;
-		pos.Z = 80000;
+		pos.Z = 40000;
 	}
 	else {
 		pos.X = 250;
@@ -121,18 +120,22 @@ void  AAAvion::OnBoxBeginOverlap(UPrimitiveComponent* componenteChoque, AActor* 
 	if (!activo) {
 		if (SimulacionActiva && !ModPosition) { //diferente choque segun cesium o terrenos
 			UE_LOG(LogTemp, Warning, TEXT("CHOQUE"));
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, "CHOQUE");
+		//S	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, "CHOQUE");
 			colision = true;
 			npos.X = 0;
 			npos.Y = 0;
 			npos.Z = 10000;
-			parar = false;
 			this->SetActorLocation(npos);
 		}
 	}
 	else {
 		UE_LOG(LogTemp, Warning, TEXT("CHOQUE"));
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, "CHOQUE");
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, "CHOQUE");
+		colision = true;
+		npos.X = 250;
+		npos.Y = 250;
+		npos.Z = 1000;
+		this->SetActorLocation(npos);
 	}
 	
 }
